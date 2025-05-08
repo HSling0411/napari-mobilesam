@@ -1,0 +1,10 @@
+name: napari-mobilesam
+display_name: MobileSAM Segmentation
+contributions:
+  commands:
+    - id: napari-mobilesam.make_widget
+      python_name: napari_mobilesam._widget:MobileSamWidget
+      title: MobileSAM Segmentation
+  widgets:
+    - command: napari-mobilesam.make_widget
+      display_name: MobileSAM 

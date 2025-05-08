@@ -1,0 +1,43 @@
+要构建一个适配 Mac M 系列芯片、基于 MobileSAM 且具备点标注与框选预测功能的 napari-mobilesam 插件，以下是详细的开发建议与架构规划：
+一、整体架构设计
+1.	依赖组件选择：
+	•	MobileSAM: 使用开源项目 ChaoningZhang/MobileSAM，部署轻量化 SAM 推理；
+	•	napari: 作为图像可视化与交互框架；
+	•	napari-plugin-engine: 实现插件注册与入口；
+	•	PyTorch (>=1.13, 支持 MPS): 使用 mps 后端以兼容 Mac M 系列；
+	•	numpy, opencv-python, scikit-image: 用于图像处理；
+
+2.	基本功能模块：
+	•	图像加载与显示；
+	•	Shapes 图层支持点标注与框选交互；
+	•	响应事件触发模型推理；
+	•	掩码结果显示与保存；
+	•	可选：掩码结果写入 Labels 图层或导出为 PNG/JSON。
+ 
+二、主要功能实现路径
+ 1. 加载 MobileSAM 模型
+ 2. 实现点标注掩码生成
+ 3. 实现框选掩码生成
+ 4. napari 插件交互层
+使用 magicgui 和 napari.types.LayerDataTuple 来构建 GUI 小部件，连接 Shapes 图层与 SAM 推理
+
+三、插件结构建议
+napari_mobilesam/
+├── __init__.py
+├── _widget.py         # 主交互逻辑
+├── mobilesam_wrapper.py  # SAM 模型加载与推理封装
+├── utils.py           # 数据格式转换、掩码叠加工具
+├── _tests/
+│   └── test_plugin.py
+└── napari.yaml        # 插件注册信息
+
+四、优化建议与注意事项
+	•	坐标精度问题：确保 Shapes 图层中的坐标转换到图像尺寸空间时进行 dtype 和缩放精度统一；
+	•	MPS 兼容性：在推理输入时手动 .to(torch.float32).to("mps")，避免浮点错误；
+	•	界面优化：建议使用 magicgui 结合 napari dock widget 提供预测控制参数（点数、框大小、输出设置）；
+	•	多线程运行：避免 UI 卡顿，使用 threading.Thread 来异步处理推理任务；
+
+五、后续扩展方向
+	•	添加自动命名与批量处理标注结果；
+	•	提供多类标注模式（如：点、框、混合）；
+	•	支持掩码修正、点击式编辑功能。
